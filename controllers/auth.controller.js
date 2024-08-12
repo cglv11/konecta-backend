@@ -2,38 +2,33 @@ const { response } = require("express");
 const bcryptjs = require("bcryptjs");
 
 const { generateJWT } = require("../helpers/generate-jwt");
-const { User } = require("../models");
+const { prisma } = require("../database/config.db");
 
 const login = async (req, res = response) => {
     const { username, password } = req.body;
 
     try {
-        const user = await User.findOne({ where: { username } });
+        const employee = await prisma.employee.findUnique({
+            where: { username }
+        });
 
-        if (!user) {
+        if (!employee || !employee.state) {
             return res.status(400).json({
-                msg: 'The username does not exist'
+                msg: 'The user does not exist'
             });
-        }
+        }        
 
-        if (!user.state) {
-            return res.status(400).json({
-                msg: 'The user is not exist'
-            });
-        }
-
-        const validPassword = bcryptjs.compareSync(password, user.password);
+        const validPassword = bcryptjs.compareSync(password, employee.password);
         if (!validPassword) {
             return res.status(400).json({
                 msg: 'The password is incorrect'
             });
         }
 
-        // Generar el JWT
-        const token = await generateJWT(user.id);
+        const token = await generateJWT(employee.id);
 
         res.json({ 
-            user,
+            employee,
             token
         });
     } catch (error) {
@@ -42,18 +37,8 @@ const login = async (req, res = response) => {
             msg: 'Please contact the administrator'
         });
     }
-}
-
-const validateToken = async (req, res = response) => {
-    const token = req.header('x-token');
-    
-    res.json({
-        user: req.user,
-        token: token,
-    });
-}
+};
 
 module.exports = {
-    login,
-    validateToken
-}
+    login
+};

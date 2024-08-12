@@ -1,23 +1,29 @@
-const { drizzle } = require("drizzle-orm/node-postgres");
-const { Client } = require("pg");
+const { PrismaClient } = require('@prisma/client');
 
-const client = new Client({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+class Database {
+  constructor() {
+    if (!Database.instance) {
+      this.prisma = new PrismaClient();
+      Database.instance = this;
+    }
 
-const dbConnection = async () => {
-  try {
-    await client.connect();
-    console.log('Database online');
-    return drizzle(client);
-  } catch (error) {
-    console.error('Error initializing the database', error);
-    throw new Error('Error initializing the database');
+    return Database.instance;
   }
-};
 
-module.exports = { dbConnection };
+  async connectDb() {
+    try {
+      await this.prisma.$connect();
+      console.log('Database connected successfully.');
+    } catch (error) {
+      console.error('Error connecting to the database:', error);
+      process.exit(1);
+    }
+  }
+}
+
+const dbInstance = new Database();
+
+module.exports = {
+  prisma: dbInstance.prisma,
+  connectDb: dbInstance.connectDb.bind(dbInstance)
+};
