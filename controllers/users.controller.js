@@ -49,12 +49,6 @@ const userGet = async (req, res = response) => {
 const usersPost = async (req, res = response) => {
     const { password, username, role } = req.body;
 
-    if (role !== 'admin') {
-        return res.status(403).json({
-            msg: 'You do not have permission to perform this action',
-        });
-    }
-
     try {
         const existingUser = await prisma.user.findUnique({
             where: { username }
@@ -138,12 +132,6 @@ const usersPut = async (req, res = response) => {
 
 const usersDelete = async (req, res = response) => {
     const { id } = req.params;
-
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({
-            msg: 'You do not have permission to perform this action',
-        });
-    }
 
     try {
         const user = await prisma.user.update({
