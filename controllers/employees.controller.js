@@ -5,14 +5,45 @@ const { prisma } = require("../database/config.db");
 const { generateJWT } = require('../helpers');
 
 const employeesGet = async (req, res = response) => {
+    const { page = 1, limit = 10, name, username, role } = req.query;
+
+    const skip = (page - 1) * limit;
+    const take = parseInt(limit);
+
     try {
-        const employees = await prisma.employee.findMany({
-            where: { state: true }
-        });
-        const total = employees.length;
-    
+        const filters = {
+            state: true
+        };
+
+        if (name) {
+            filters.name = {
+                contains: name,
+            };
+        }
+
+        if (role) {
+            filters.role = role;
+        }
+
+        if (username) {
+            filters.username = {
+                contains: username,
+            };
+        }
+
+        const [total, employees] = await Promise.all([
+            prisma.employee.count({ where: filters }),
+            prisma.employee.findMany({
+                where: filters,
+                skip,
+                take
+            })
+        ]);
+
         res.json({
             total,
+            page: parseInt(page),
+            totalPages: Math.ceil(total / limit),
             employees
         });
     } catch (error) {
@@ -22,6 +53,7 @@ const employeesGet = async (req, res = response) => {
         });
     }
 };
+
 
 const employeeGet = async (req, res = response) => {
     const { id } = req.params;
