@@ -1,4 +1,4 @@
-const { prisma } = require('../database/config.db'); // Asegúrate de que Prisma esté importado correctamente
+const { prisma } = require('../database/config.db');
 
 const existEmployeeById = async (id) => {
     const employeeId = parseInt(id);

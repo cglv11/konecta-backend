@@ -14,13 +14,10 @@ class Server {
       requests: "/api/requests",
     };
 
-    // Conectar a base de datos
     this.connectDB();
 
-    // Middlewares
     this.middlewares();
 
-    // Rutas de mi aplicación
     this.routes();
   }
 
@@ -29,13 +26,10 @@ class Server {
   }
 
   middlewares() {
-    // CORS
     this.app.use(cors());
 
-    // Lectura y parseo del body
     this.app.use(express.json());
 
-    // Directorio público
     this.app.use(express.static("public"));
 
   }
