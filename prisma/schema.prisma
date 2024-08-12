@@ -13,26 +13,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int       @id @default(autoincrement())
-  username  String    @unique
-  password  String
-  role      String
-  createdAt DateTime  @default(now())
-  state     Boolean   @default(true)
-  employees Employee[]
-}
-
 model Employee {
-  id        Int       @id @default(autoincrement())
-  userId    Int
-  hireDate  DateTime
-  name      String
-  salary    Float
-  state     Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id])
-  requests  Request[]
+  id          Int       @id @default(autoincrement())
+  username    String    @unique
+  password    String
+  role        String
+  hireDate    DateTime
+  name        String
+  salary      Float
+  state       Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  requests    Request[]
 }
 
 model Request {
@@ -44,4 +35,5 @@ model Request {
   state       Boolean   @default(true)
   createdAt   DateTime  @default(now())
   employee    Employee  @relation(fields: [employeeId], references: [id])
+  @@index([employeeId]) 
 }

@@ -1,45 +1,24 @@
 const { response } = require('express')
 
-const isAdminRole = ( req, res = response ) => {
+const isAdminRole = (req, res = response, next) => {
 
-    if( !req.admService ) {
+    if (!req.employee) {
         return res.status(500).json({
-            msg: 'Se debe verificar el token primero para luego validar el role'
-        })
-    }
-
-    const { role, name } = req.admService;
-
-    if ( role !== 'ADMIN_ROLE') {
-        return res.status(401).json({
-            msg: `${ name } no es administrador - No se puede hacer la solicitud`
+            msg: 'Token must be verified before validating the role'
         });
     }
 
-    next()
-}
+    const { role } = req.employee;
 
-const hasRole = ( ...roles ) => {
-
-    return (req, res = response, next) => {
-
-        if( !req.admService ) {
-            return res.status(500).json({
-                msg: 'Se debe verificar el token primero para luego validar el role'
-            }) 
-        }
-
-        if ( !roles.includes( req.admService.role ) ) {
-            return res.status(401).json({
-                msg: `El servicio requiere uno de estos roles ${ roles } el tuyo es ${ req.admService.role }`
-            })
-        }
-
-        next()
+    if (role !== 'ADMIN') {
+        return res.status(401).json({
+            msg: 'Access denied - employee is not an administrator'
+        });
     }
-}
+
+    next();
+};
 
 module.exports = {
     isAdminRole,
-    hasRole
 }

@@ -1,70 +1,49 @@
-const { response, request } = require('express');
+const { request, response } = require('express');
 const jwt = require('jsonwebtoken');
+const { prisma } = require("../database/config.db");
 
-const User = require('../server/user');
-const AdmService = require('../server/admService');
+const validateJWT = async (req = request, res = response, next) => {
+    const authorizationHeader = req.header('Authorization');
 
-const validateJWT = async ( req = request, res = response, next ) => {
-
-    const token = req.header('x-token');
-
-    if ( !token ) {
+    if (!authorizationHeader) {
         return res.status(401).json({
-            msg: 'No hay token en la petición'
+            msg: 'No token provided'
+        });
+    }
+
+    const token = authorizationHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({
+            msg: 'Invalid token format'
         });
     }
 
     try {
-        
-        const { uid } = jwt.verify( token, process.env.SECRETORPRIVATEKEY );
-          
-        // Lee usuario que corresponde al uid
-        const [ admService, user ]  = await Promise.all([
-            AdmService.findById( uid ),
-            User.findById( uid ),
-        ]);
+        const { uid } = jwt.verify(token, process.env.SECRETORPRIVATEKEY);
 
-        // Verificar si el token-uid existe
-        if ( !admService && !user) {
+        const employee = await prisma.employee.findUnique({
+            where: { id: uid }
+        });
+
+        if (!employee || !employee.state) {
             return res.status(401).json({
-                msg: 'Token no válido - usuario no existe en DB'
-            })
+                msg: 'Invalid token - employee does not exist in DB'
+            });
         }
 
-        // Verificar si el estado del adm Servicio (uid) está borrado (false)
-        if ( admService != null ) {
-            // Si el administrador está activo
-            if ( !admService.state )
-                return res.status(401).json({
-                    msg: 'Token no válido - Administrador Servicios con estado false'
-            });
-              
-            req.admService = admService;
-        }
-
-        // Verificar si el estado del usuario (uid) está borrado (false)
-        if ( user != null ) {
-            // Si el usuario está activo
-            if ( !user.state )
-                return res.status(401).json({
-                    msg: 'Token no válido - User con estado false'
-            });
-              
-            req.user = user;
-        }
+        req.employee = employee;
 
         next();
 
     } catch (error) {
-
         console.log(error);
-        res.status(401).json({
-            msg: 'Token no válido'
-        })
+        return res.status(401).json({
+            msg: 'Invalid token'
+        });
     }
-
-}
+};
 
 module.exports = {
     validateJWT
-}
+};
