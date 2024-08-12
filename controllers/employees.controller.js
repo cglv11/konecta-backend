@@ -18,7 +18,7 @@ const employeesGet = async (req, res = response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error occurred. Please try again.'
+            msg: 'An unexpected error. Please try again.'
         });
     }
 };
@@ -41,7 +41,7 @@ const employeeGet = async (req, res = response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error occurred. Please try again.'
+            msg: 'An unexpected error. Please try again.'
         });
     }
 };
@@ -84,7 +84,7 @@ const employeesPost = async (req, res = response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error occurred while registering the employee. Please try again.'
+            msg: 'An unexpected error. Please try again.'
         });
     }
 };
@@ -144,7 +144,7 @@ const employeesPut = async (req, res = response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error occurred while updating the employee. Please try again.'
+            msg: 'An unexpected error. Please try again.'
         });
     }
 };
@@ -162,14 +162,14 @@ const employeesDelete = async (req, res = response) => {
         const employeeAuthenticated = req.user;
 
         res.json({
-            msg: 'Employee has been deleted',
+            msg: 'Employee deleted',
             employee,
             employeeAuthenticated
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error occurred while deleting the employee. Please try again.'
+            msg: 'An unexpected error. Please try again.'
         });
     }
 };

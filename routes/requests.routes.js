@@ -2,25 +2,34 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 
 const { requestGet, requestsPost, requestsDelete, requestsGet } = require('../controllers/requests.controller');
-// const { validateFields } = require('../middlewares/validate-fields');
-// const { validateJWT } = require('../middlewares/validate-jwt');
+const { validateFields } = require('../middlewares/validate-fields');
+const { validateJWT } = require('../middlewares/validate-jwt');
+const { isAdminRole } = require('../middlewares/validate-roles'); 
+const { existEmployeeById } = require('../middlewares/db-validators');
 
 const router = Router();
 
-router.get('/:id', requestGet);
+router.get('/:id', [
+    check('id', 'No es un ID válido').isInt(),
+    validateJWT,
+    validateFields
+], requestGet);
 
-router.get("/", requestsGet);
+router.get("/", [
+    validateJWT,
+], requestsGet);
 
 router.post('/', [
-    // validateJWT,
-    // validateFields
+    validateJWT,
+    check('employeeId').custom(existEmployeeById),
+    validateFields
 ], requestsPost);
 
 router.delete('/:id', [
-    // validateJWT,
+    validateJWT,
+    isAdminRole,
     check('id', 'No es un ID válido').isInt(),
-    // check('id').custom(existRequestById),
-    // validateFields
+    validateFields
 ], requestsDelete);
 
 module.exports = router;

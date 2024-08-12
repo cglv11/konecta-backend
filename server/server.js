@@ -11,7 +11,7 @@ class Server {
     this.paths = {
       employees: "/api/employees",
       auth: "/api/auth",
-      /* requests: "/api/requests", */
+      requests: "/api/requests",
     };
 
     // Conectar a base de datos
@@ -43,7 +43,7 @@ class Server {
   routes() {
     this.app.use(this.paths.employees, require("../routes/employees.routes"));
     this.app.use(this.paths.auth, require("../routes/auth.routes"));
-    /* this.app.use(this.paths.requests, require("../routes/requests.routes")); */
+    this.app.use(this.paths.requests, require("../routes/requests.routes"));
   }
 
   listen() {

@@ -1,8 +1,9 @@
 const { response } = require('express');
+const { prisma } = require('../database/config.db');
 
 const requestsGet = async (req, res = response) => {
     try {
-        const requests = await Request.findMany({ where: { state: true } });
+        const requests = await prisma.request.findMany({ where: { state: true } });
         const total = requests.length;
 
         res.json({
@@ -12,7 +13,7 @@ const requestsGet = async (req, res = response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error occurred. Please try again.'
+            msg: 'An unexpected error. Please try again.'
         });
     }
 };
@@ -21,7 +22,9 @@ const requestGet = async (req, res = response) => {
     const { id } = req.params;
 
     try {
-        const request = await Request.findOne({ where: { id, state: true } });
+        const request = await prisma.request.findUnique({
+            where: { id: parseInt(id), state: true }
+        });
 
         if (!request) {
             return res.status(404).json({
@@ -33,7 +36,7 @@ const requestGet = async (req, res = response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error occurred. Please try again.'
+            msg: 'An unexpected error. Please try again.'
         });
     }
 };
@@ -42,15 +45,25 @@ const requestsPost = async (req, res = response) => {
     const { code, description, summary, employeeId } = req.body;
 
     try {
-        const newRequest = {
-            code,
-            description,
-            summary,
-            employeeId,
-            state: true
-        };
+        const existingRequest = await prisma.request.findUnique({
+            where: { code }
+        });
 
-        const request = await Request.insert(newRequest);
+        if (existingRequest) {
+            return res.status(400).json({
+                msg: 'The code is already in use.'
+            });
+        }
+
+        const request = await prisma.request.create({
+            data: {
+                code,
+                description,
+                summary,
+                employeeId: parseInt(employeeId),
+                state: true
+            }
+        });
 
         res.status(201).json({
             request
@@ -58,7 +71,7 @@ const requestsPost = async (req, res = response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error occurred while creating the request. Please try again.'
+            msg: 'An unexpected error occurred. Please try again.'
         });
     }
 };
@@ -66,15 +79,9 @@ const requestsPost = async (req, res = response) => {
 const requestsDelete = async (req, res = response) => {
     const { id } = req.params;
 
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({
-            msg: 'You do not have permission to perform this action',
-        });
-    }
-
     try {
-        const request = await Request.update({
-            where: { id },
+        const request = await prisma.request.update({
+            where: { id: parseInt(id) },
             data: { state: false },
         });
 
@@ -91,7 +98,7 @@ const requestsDelete = async (req, res = response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error occurred while deleting the request. Please try again.'
+            msg: 'An unexpected error. Please try again.'
         });
     }
 };
