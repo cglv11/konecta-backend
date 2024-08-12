@@ -1,15 +1,14 @@
 const { response } = require('express');
 const bcryptjs = require('bcryptjs');
-const { eq } = require('drizzle-orm');
 
-const { db } = require("../database/config.db");
-const { User } = require('../models');
+const { prisma } = require("../database/config.db");
 const { generateJWT } = require('../helpers');
-
 
 const usersGet = async (req, res = response) => {
     try {
-        const users = await User.findMany({ where: { state: true } });
+        const users = await prisma.user.findMany({
+            where: { state: true }
+        });
         const total = users.length;
     
         res.json({
@@ -24,12 +23,13 @@ const usersGet = async (req, res = response) => {
     }
 };
 
-
 const userGet = async (req, res = response) => {
     const { id } = req.params;
 
     try {
-        const user = await User.findOne({ where: { id } });
+        const user = await prisma.user.findUnique({
+            where: { id: parseInt(id) }
+        });
         
         if (!user) {
             return res.status(404).json({
@@ -46,7 +46,6 @@ const userGet = async (req, res = response) => {
     }
 };
 
-
 const usersPost = async (req, res = response) => {
     const { password, username, role } = req.body;
 
@@ -57,10 +56,11 @@ const usersPost = async (req, res = response) => {
     }
 
     try {
-        // Buscar si el username ya existe
-        const existingUser = await db().select().from(User).where(eq(User.username, username)).execute();
+        const existingUser = await prisma.user.findUnique({
+            where: { username }
+        });
 
-        if (existingUser.length > 0) {
+        if (existingUser) {
             return res.status(400).json({
                 msg: `The username ${username} is already registered`,
             });
@@ -69,21 +69,19 @@ const usersPost = async (req, res = response) => {
         const salt = bcryptjs.genSaltSync();
         const hashedPassword = bcryptjs.hashSync(password, salt);
 
-        const newUser = {
-            username,
-            password: hashedPassword,
-            role,
-            state: true
-        };
+        const newUser = await prisma.user.create({
+            data: {
+                username,
+                password: hashedPassword,
+                role,
+                state: true
+            }
+        });
 
-        // Insertar nuevo usuario
-        const insertedUser = await db.insert(User).values(newUser).returning().execute();
+        const token = await generateJWT(newUser.id);
 
-        // Generar JWT
-        const token = await generateJWT(insertedUser[0].id);
-
-        res.status(202).json({
-            user: insertedUser[0],
+        res.status(201).json({
+            user: newUser,
             token
         });
     } catch (error) {
@@ -94,14 +92,15 @@ const usersPost = async (req, res = response) => {
     }
 };
 
-
 const usersPut = async (req, res = response) => {
     const { id } = req.params;
-    let { _id, username, password, role, ...rest } = req.body;
+    let { username, password, role, ...rest } = req.body;
 
     try {
         if (username) {
-            const userDBUsername = await User.findOne({ where: { username, state: true } });
+            const userDBUsername = await prisma.user.findUnique({
+                where: { username }
+            });
 
             if (userDBUsername && userDBUsername.id !== parseInt(id)) {
                 return res.status(400).json({
@@ -123,20 +122,12 @@ const usersPut = async (req, res = response) => {
             });
         }
 
-        rest.role = role;
-
-        const user = await User.update({
-            where: { id },
-            data: rest,
+        const updatedUser = await prisma.user.update({
+            where: { id: parseInt(id) },
+            data: rest
         });
 
-        if (!user) {
-            return res.status(404).json({
-                msg: 'User not found',
-            });
-        }
-
-        res.json(user);
+        res.json(updatedUser);
     } catch (error) {
         console.error(error);
         res.status(500).json({
@@ -155,9 +146,9 @@ const usersDelete = async (req, res = response) => {
     }
 
     try {
-        const user = await User.update({
-            where: { id },
-            data: { state: false },
+        const user = await prisma.user.update({
+            where: { id: parseInt(id) },
+            data: { state: false }
         });
 
         const userAuthenticated = req.user;
@@ -174,6 +165,7 @@ const usersDelete = async (req, res = response) => {
         });
     }
 };
+
 
 
 module.exports = {

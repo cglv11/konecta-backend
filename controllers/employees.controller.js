@@ -1,5 +1,4 @@
 const { response } = require('express');
-const { Employee } = require('../models');
 
 const employeesGet = async (req, res = response) => {
     if (req.user.role !== 'employee' && req.user.role !== 'admin') {

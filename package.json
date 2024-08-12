@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node app",
-    "migrate": "prisma migrate dev --name init && prisma generate"
+    "start": "node app"
   },
   "keywords": [],
   "author": "",

@@ -1,7 +1,7 @@
 const { Role, 
         AdmService, 
         User,
-        Auction } = require('../models')
+        Auction } = require('../server')
 
 const isValidRole = async (role = '') => {
     const existRole = await Role.findOne({ role });
