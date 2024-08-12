@@ -8,27 +8,27 @@ const login = async (req, res = response) => {
     const { username, password } = req.body;
 
     try {
-        const user = await prisma.user.findUnique({
+        const employee = await prisma.employee.findUnique({
             where: { username }
         });
 
-        if (!user || !user.state) {
+        if (!employee || !employee.state) {
             return res.status(400).json({
                 msg: 'The user does not exist'
             });
         }        
 
-        const validPassword = bcryptjs.compareSync(password, user.password);
+        const validPassword = bcryptjs.compareSync(password, employee.password);
         if (!validPassword) {
             return res.status(400).json({
                 msg: 'The password is incorrect'
             });
         }
 
-        const token = await generateJWT(user.id);
+        const token = await generateJWT(employee.id);
 
         res.json({ 
-            user,
+            employee,
             token
         });
     } catch (error) {
