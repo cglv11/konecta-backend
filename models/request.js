@@ -1,4 +1,4 @@
-const { pgTable, serial, varchar, integer, boolean }  = require("drizzle-orm/pg-core");
+const { pgTable, serial, varchar, integer, timestamp, boolean }  = require("drizzle-orm/pg-core");
 const Employee = require('./employee');
 
 const Request = pgTable('requests', {
@@ -8,6 +8,7 @@ const Request = pgTable('requests', {
     description: varchar('description', 255).notNull(),
     summary: varchar('summary', 50).notNull(),
     state: boolean('state').default(true).notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
 }, {
     schema: 'public',
 });

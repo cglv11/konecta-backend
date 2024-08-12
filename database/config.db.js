@@ -1,17 +1,11 @@
-const { drizzle } = require("drizzle-orm/node-postgres");
-const { Client } = require("pg");
+const { drizzle } = require('drizzle-orm/postgres-js');
+const postgres = require('postgres');
 
-const client = new Client({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+const connectionString = process.env.DATABASE_URL;
+const client = postgres(connectionString);
 
-const dbConnection = async () => {
+const db = () => {
   try {
-    await client.connect();
     console.log('Database online');
     return drizzle(client);
   } catch (error) {
@@ -20,4 +14,4 @@ const dbConnection = async () => {
   }
 };
 
-module.exports = { dbConnection };
+module.exports = { db };

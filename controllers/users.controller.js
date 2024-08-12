@@ -1,8 +1,11 @@
 const { response } = require('express');
-const bcryptjs = require('bcryptjs')
+const bcryptjs = require('bcryptjs');
+const { eq } = require('drizzle-orm');
 
+const { db } = require("../database/config.db");
 const { User } = require('../models');
 const { generateJWT } = require('../helpers');
+
 
 const usersGet = async (req, res = response) => {
     try {
@@ -43,18 +46,21 @@ const userGet = async (req, res = response) => {
     }
 };
 
-const usersPost = async (req, res = response) => {
-    const { name, password, username, role } = req.body;
 
-    if (req.user.role !== 'admin') {
+const usersPost = async (req, res = response) => {
+    const { password, username, role } = req.body;
+
+    if (role !== 'admin') {
         return res.status(403).json({
             msg: 'You do not have permission to perform this action',
         });
     }
 
     try {
-        const username = await User.findOne({ where: { username, state: true } });
-        if (username) {
+        // Buscar si el username ya existe
+        const existingUser = await db().select().from(User).where(eq(User.username, username)).execute();
+
+        if (existingUser.length > 0) {
             return res.status(400).json({
                 msg: `The username ${username} is already registered`,
             });
@@ -64,20 +70,20 @@ const usersPost = async (req, res = response) => {
         const hashedPassword = bcryptjs.hashSync(password, salt);
 
         const newUser = {
-            name,
-            password: hashedPassword,
             username,
+            password: hashedPassword,
             role,
             state: true
         };
 
-        const user = await User.insert(newUser);
+        // Insertar nuevo usuario
+        const insertedUser = await db.insert(User).values(newUser).returning().execute();
 
         // Generar JWT
-        const token = await generateJWT(user.id);
+        const token = await generateJWT(insertedUser[0].id);
 
         res.status(202).json({
-            user,
+            user: insertedUser[0],
             token
         });
     } catch (error) {
@@ -87,6 +93,7 @@ const usersPost = async (req, res = response) => {
         });
     }
 };
+
 
 const usersPut = async (req, res = response) => {
     const { id } = req.params;

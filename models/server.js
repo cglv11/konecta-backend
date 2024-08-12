@@ -1,9 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 
-const fileUpload = require("express-fileupload");
-
-const { dbConnection } = require("../database/config.db");
+const { db } = require("../database/config.db");
 
 class Server {
   constructor() {
@@ -28,7 +26,7 @@ class Server {
   }
 
   async connectDB() {
-    await dbConnection();
+    await db();
   }
 
   middlewares() {
@@ -41,20 +39,12 @@ class Server {
     // Directorio público
     this.app.use(express.static("public"));
 
-    // Cargar archivos
-    this.app.use(
-      fileUpload({
-        useTempFiles: true,
-        createParentPath: true,
-        tempFileDir: "/tmp/",
-      })
-    );
   }
 
   routes() {
     this.app.use(this.paths.employees, require("../routes/employees.routes"));
     this.app.use(this.paths.requests, require("../routes/requests.routes"));
-    this.app.use(this.paths.requests, require("../routes/users.routes"));
+    this.app.use(this.paths.users, require("../routes/users.routes"));
     this.app.use(this.paths.auth, require("../routes/auth.routes"));
   }
 
