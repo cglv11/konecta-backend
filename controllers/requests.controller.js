@@ -2,21 +2,49 @@ const { response } = require('express');
 const { prisma } = require('../database/config.db');
 
 const requestsGet = async (req, res = response) => {
+    const { page = 1, limit = 10, code, employeeId } = req.query;
+
+    const skip = (page - 1) * limit;
+    const take = parseInt(limit);
+
     try {
-        const requests = await prisma.request.findMany({ where: { state: true } });
-        const total = requests.length;
+        const filters = {
+            state: true
+        };
+
+        if (code) {
+            filters.code = {
+                contains: code,
+            };
+        }
+
+        if (employeeId) {
+            filters.employeeId = parseInt(employeeId);
+        }
+
+        const [total, requests] = await Promise.all([
+            prisma.request.count({ where: filters }),
+            prisma.request.findMany({
+                where: filters,
+                skip,
+                take
+            })
+        ]);
 
         res.json({
             total,
+            page: parseInt(page),
+            totalPages: Math.ceil(total / limit),
             requests
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            msg: 'An unexpected error. Please try again.'
+            msg: 'An unexpected error occurred. Please try again.'
         });
     }
 };
+
 
 const requestGet = async (req, res = response) => {
     const { id } = req.params;
