@@ -1,17 +1,15 @@
-const { drizzle } = require('drizzle-orm/postgres-js');
-const postgres = require('postgres');
+const { PrismaClient } = require('@prisma/client');
 
-const connectionString = process.env.DATABASE_URL;
-const client = postgres(connectionString);
+const prisma = new PrismaClient();
 
-const db = () => {
-  try {
-    console.log('Database online');
-    return drizzle(client);
-  } catch (error) {
-    console.error('Error initializing the database', error);
-    throw new Error('Error initializing the database');
-  }
+const connectDb = async () => {
+    try {
+        await prisma.$connect();
+        console.log('Database connected successfully.');
+    } catch (error) {
+        console.error('Error connecting to the database:', error);
+        process.exit(1);
+    }
 };
 
-module.exports = { db };
+module.exports = { prisma, connectDb };

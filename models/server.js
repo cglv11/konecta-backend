@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 
-const { db } = require("../database/config.db");
+const { connectDb } = require("../database/config.db");
 
 class Server {
   constructor() {
@@ -9,10 +9,10 @@ class Server {
     this.port = process.env.PORT;
 
     this.paths = {
-      employees: "/api/employees",
+/*       employees: "/api/employees",
       users: "/api/users",
       requests: "/api/requests",
-      auth: "/api/auth",
+      auth: "/api/auth", */
     };
 
     // Conectar a base de datos
@@ -26,7 +26,7 @@ class Server {
   }
 
   async connectDB() {
-    await db();
+    await connectDb();
   }
 
   middlewares() {
@@ -42,10 +42,10 @@ class Server {
   }
 
   routes() {
-    this.app.use(this.paths.employees, require("../routes/employees.routes"));
+/*     this.app.use(this.paths.employees, require("../routes/employees.routes"));
     this.app.use(this.paths.requests, require("../routes/requests.routes"));
     this.app.use(this.paths.users, require("../routes/users.routes"));
-    this.app.use(this.paths.auth, require("../routes/auth.routes"));
+    this.app.use(this.paths.auth, require("../routes/auth.routes")); */
   }
 
   listen() {
