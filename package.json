@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+<<<<<<< Updated upstream
     "start": "node app"
+=======
+    "start": "node database/seedAdmin.js && node app",
+    "test": "jest"
+>>>>>>> Stashed changes
   },
   "keywords": [],
   "author": "",
