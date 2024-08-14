@@ -4,12 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-<<<<<<< Updated upstream
-    "start": "node app"
-=======
     "start": "node database/seedAdmin.js && node app",
     "test": "jest"
->>>>>>> Stashed changes
   },
   "keywords": [],
   "author": "",
@@ -30,6 +26,8 @@
   },
   "devDependencies": {
     "drizzle-kit": "^0.24.0",
-    "prisma": "^5.18.0"
+    "jest": "^29.7.0",
+    "prisma": "^5.18.0",
+    "supertest": "^7.0.0"
   }
 }

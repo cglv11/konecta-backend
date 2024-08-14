@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file: ./.env
+    ports:
+      - 8080:8080
+    command: sh -c "npx prisma migrate deploy && npm start"
+    networks:
+      - konecta_network
+
+networks:
+  konecta_network:
+    external: true

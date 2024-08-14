@@ -25,10 +25,7 @@ describe('Employees Controller - Get Employees', () => {
 
     it('should return a list of employees and total count', async () => {
         prisma.employee.count.mockResolvedValue(2);
-        prisma.employee.findMany.mockResolvedValue([
-            { id: 1, username: 'test1' }, 
-            { id: 2, username: 'test2' }
-        ]);
+        prisma.employee.findMany.mockResolvedValue([{ id: 1, username: 'test1' }, { id: 2, username: 'test2' }]);
 
         const req = mockRequest({ page: '1', limit: '10' });
         const res = mockResponse();
@@ -39,10 +36,7 @@ describe('Employees Controller - Get Employees', () => {
             total: 2,
             page: 1,
             totalPages: 1,
-            employees: [
-                { id: 1, username: 'test1' }, 
-                { id: 2, username: 'test2' }
-            ]
+            employees: [{ id: 1, username: 'test1' }, { id: 2, username: 'test2' }]
         });
     });
 
